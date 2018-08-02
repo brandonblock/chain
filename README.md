@@ -1,0 +1,1 @@
+A simplified cryptocurrency based on a basic blockchain implementation.
