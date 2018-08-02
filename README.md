@@ -1,1 +1,1 @@
-A simplified cryptocurrency based on a basic blockchain implementation.
+A simplified cryptocurrency based on a basic blockchain implementation with comprehensive test coverage.
