@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"strconv"
+	"time"
 )
 
 // Block stores on-chain information
@@ -12,6 +13,18 @@ type Block struct {
 	Data          []byte
 	PrevBlockHash []byte
 	Hash          []byte
+}
+
+// NewBlock creates a new Block and sets its hash
+func NewBlock(data string, prevBlockHash []byte) *Block {
+	block := Block{
+		Timestamp:     time.Now().Unix(),
+		Data:          []byte(data),
+		PrevBlockHash: prevBlockHash,
+		Hash:          []byte{},
+	}
+	block.SetHash()
+	return &block
 }
 
 // SetHash calculates and sets a SHA 256 hash
