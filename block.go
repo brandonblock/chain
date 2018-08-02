@@ -15,6 +15,11 @@ type Block struct {
 	Hash          []byte
 }
 
+// NewGenesisBlock creates this first block on a chain
+func NewGenesisBlock() *Block {
+	return NewBlock("Genesis Block", []byte{})
+}
+
 // NewBlock creates a new Block and sets its hash
 func NewBlock(data string, prevBlockHash []byte) *Block {
 	block := Block{
