@@ -38,7 +38,7 @@ func TestBlock_SetHash(t *testing.T) {
 				PrevBlockHash: tt.fields.PrevBlockHash,
 				Hash:          tt.fields.Hash,
 			}
-			b.SetHash()
+			b.setHash()
 			fmt.Println(b.Hash)
 			assert.Equal(t, tt.fields.expected, fmt.Sprintf("%v", b.Hash), "This hash is deterministic")
 		})

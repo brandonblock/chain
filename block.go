@@ -23,12 +23,12 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 		PrevBlockHash: prevBlockHash,
 		Hash:          []byte{},
 	}
-	block.SetHash()
+	block.setHash()
 	return &block
 }
 
 // SetHash calculates and sets a SHA 256 hash
-func (b *Block) SetHash() {
+func (b *Block) setHash() {
 	timestamp := []byte(strconv.FormatInt(b.Timestamp, 10))
 	headers := bytes.Join([][]byte{b.PrevBlockHash, b.Data, timestamp}, []byte{})
 	hash := sha256.Sum256(headers)
