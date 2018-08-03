@@ -34,7 +34,7 @@ func (p *ProofOfWork) Run() (int, []byte) {
 	var hash [32]byte
 	nonce := 0
 
-	log.Info("Mining block containing \"%s\"", p.block.Data)
+	log.Infof("Mining block containing %v", p.block.Data)
 	// don't overflow the counter
 	for nonce < math.MaxInt64 {
 		// prepare
@@ -51,6 +51,19 @@ func (p *ProofOfWork) Run() (int, []byte) {
 		nonce++
 	}
 	return nonce, hash[:]
+}
+
+// Validate compares the current as to the current nonce
+func (p *ProofOfWork) Validate() bool {
+	var hashInt big.Int
+
+	data := p.prepareData(p.block.Nonce)
+	hash := sha256.Sum256(data)
+	hashInt.SetBytes(hash[:])
+
+	isValid := hashInt.Cmp(p.target) == -1
+
+	return isValid
 }
 
 // prepareData collates data for work verification
