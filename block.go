@@ -13,6 +13,7 @@ type Block struct {
 	Data          []byte
 	PrevBlockHash []byte
 	Hash          []byte
+	Nonce         int
 }
 
 // NewGenesisBlock creates this first block on a chain
@@ -28,7 +29,12 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 		PrevBlockHash: prevBlockHash,
 		Hash:          []byte{},
 	}
-	block.setHash()
+
+	//prove our work
+	p := NewProofOfWork(&block)
+	nonce, hash := p.Run()
+	block.Hash = hash
+	block.Nonce = nonce
 	return &block
 }
 
