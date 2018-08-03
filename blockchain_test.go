@@ -11,5 +11,8 @@ func TestBlockchain_AddBlock(t *testing.T) {
 	bc.AddBlock("send 1 coin to someone")
 	bc.AddBlock("send 1 coin to someone else")
 
-	assert.Equal(t, bc.blocks[0].Hash, bc.blocks[1].PrevBlockHash, "the previous hash should match the... previous hash")
+	for _, block := range bc.blocks {
+		p := NewProofOfWork(block)
+		assert.True(t, p.Validate(), "validation should be true")
+	}
 }
