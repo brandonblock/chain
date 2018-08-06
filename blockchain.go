@@ -1,4 +1,4 @@
-package chain
+package main
 
 import (
 	"github.com/boltdb/bolt"
@@ -71,6 +71,8 @@ func NewBlockchain() (*Blockchain, error) {
 // AddBlock adds a block to the record
 func (bc *Blockchain) AddBlock(data string) (err error) {
 	var lastHash []byte
+
+	log.Infof("adding block data: %s", data)
 
 	// read-only db transaction to get tip
 	if err = bc.db.View(func(tx *bolt.Tx) error {

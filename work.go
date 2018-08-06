@@ -1,4 +1,4 @@
-package chain
+package main
 
 import (
 	"bytes"
@@ -41,7 +41,7 @@ func (p *ProofOfWork) Prove() (int, []byte) {
 		data := p.prepareData(nonce)
 		// hash
 		hash = sha256.Sum256(data)
-		// convert has to big integer
+		// convert hash to big integer
 		hashInt.SetBytes(hash[:])
 
 		// compare hash with target
