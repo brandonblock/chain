@@ -35,12 +35,6 @@ func TestBlockchain_AddBlock(t *testing.T) {
 	err = bc.AddBlock("send 1 coin to someone else")
 	assert.NoError(t, err, "this should persist another transaction")
 	os.Remove(dbFile)
-
-	// TODO: re-write this test to read from db
-	// for _, block := range bc.blocks {
-	// 	p := NewProofOfWork(block)
-	// 	assert.True(t, p.Validate(), "validation should be true")
-	// }
 }
 
 func BenchmarkBlockchain_AddBlock(b *testing.B) {
