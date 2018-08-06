@@ -1,6 +1,8 @@
 package chain
 
 import (
+	"bytes"
+	"encoding/gob"
 	"time"
 )
 
@@ -33,4 +35,15 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 	block.Hash = hash
 	block.Nonce = nonce
 	return &block
+}
+
+// Serialize the block into an encoding/gob type to prepare for persistence
+func (b *Block) Serialize() ([]byte, error) {
+	var result bytes.Buffer
+	encoder := gob.NewEncoder(&result)
+	if err := encoder.Encode(b); err != nil {
+		return nil, err
+	}
+
+	return result.Bytes(), nil
 }
