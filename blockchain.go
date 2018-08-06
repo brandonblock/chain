@@ -18,12 +18,14 @@ type Blockchain struct {
 // NewBlockchain returns a new Blockchain with initial genesis block
 func NewBlockchain() (*Blockchain, error) {
 	dbFile := os.Getenv(dbFile)
+	// open db file
 	db, err := bolt.Open(dbFile, 0600, nil)
 	if err != nil {
 		return nil, err
 	}
 	var tip []byte
 
+	// create read-write boltdb transaction
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(blocksBucket))
 
@@ -83,8 +85,35 @@ func update(tx *bolt.Tx) (tip []byte, err error) {
 }
 
 // AddBlock adds a block to the record
-func (bc *Blockchain) AddBlock(data string) {
-	prevBlock := bc.blocks[len(bc.blocks)-1]
-	newBlock := NewBlock(data, prevBlock.Hash)
-	bc.blocks = append(bc.blocks, newBlock)
+func (bc *Blockchain) AddBlock(data string) (err error) {
+	var lastHash []byte
+
+	if err = bc.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(blocksBucket))
+		lastHash = b.Get([]byte("l"))
+
+		return nil
+	}); err != nil {
+		return
+	}
+
+	newBlock := NewBlock(data, lastHash)
+
+	err = bc.db.Update(func(tx *bolt.Tx) (err error) {
+		b := tx.Bucket([]byte(blocksBucket))
+		serialized, err := newBlock.Serialize()
+		if err != nil {
+			return
+		}
+		if err = b.Put(newBlock.Hash, serialized); err != nil {
+			return
+		}
+		if err = b.Put([]byte("l"), newBlock.Hash); err != nil {
+			return
+		}
+		bc.tip = newBlock.Hash
+		return
+	})
+
+	return
 }
