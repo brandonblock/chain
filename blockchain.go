@@ -56,34 +56,6 @@ func NewBlockchain() (*Blockchain, error) {
 	return &Blockchain{tip, db}, nil
 }
 
-// Update adds a transaction to the blockchain
-func update(tx *bolt.Tx) (tip []byte, err error) {
-	b := tx.Bucket([]byte(blocksBucket))
-
-	if b == nil {
-		genesis := NewGenesisBlock()
-		b, err := tx.CreateBucket([]byte(blocksBucket))
-		if err != nil {
-			return nil, err
-		}
-		serialized, err := genesis.Serialize()
-		if err != nil {
-			return nil, err
-		}
-		if err = b.Put(genesis.Hash, serialized); err != nil {
-			return nil, err
-		}
-		if err = b.Put([]byte("l"), genesis.Hash); err != nil {
-			return nil, err
-		}
-		tip = genesis.Hash
-	} else {
-		tip = b.Get([]byte("l"))
-	}
-
-	return tip, nil
-}
-
 // AddBlock adds a block to the record
 func (bc *Blockchain) AddBlock(data string) (err error) {
 	var lastHash []byte
