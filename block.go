@@ -37,9 +37,20 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 	return &block
 }
 
+// DeserializeBlock returns a block object from a serialized []byte
+func DeserializeBlock(d []byte) (*Block, error) {
+	var block Block
+
+	decoder := gob.NewDecoder(bytes.NewReader(d))
+	err := decoder.Decode(&block)
+
+	return &block, err
+}
+
 // Serialize the block into an encoding/gob type to prepare for persistence
 func (b *Block) Serialize() ([]byte, error) {
 	var result bytes.Buffer
+
 	encoder := gob.NewEncoder(&result)
 	if err := encoder.Encode(b); err != nil {
 		return nil, err
