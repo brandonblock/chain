@@ -102,3 +102,8 @@ func (bc *Blockchain) AddBlock(data string) (err error) {
 
 	return
 }
+
+// Iterator returns a BlockchainIterator with the Blockchain values
+func (bc *Blockchain) Iterator() *BlockchainIterator {
+	return &BlockchainIterator{bc.tip, bc.db}
+}
