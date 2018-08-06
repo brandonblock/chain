@@ -29,7 +29,7 @@ func NewProofOfWork(b *Block) *ProofOfWork {
 	return &ProofOfWork{b, target}
 }
 
-func (p *ProofOfWork) Run() (int, []byte) {
+func (p *ProofOfWork) Prove() (int, []byte) {
 	var hashInt big.Int
 	var hash [32]byte
 	nonce := 0

@@ -31,7 +31,7 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 
 	//prove our work
 	p := NewProofOfWork(&block)
-	nonce, hash := p.Run()
+	nonce, hash := p.Prove()
 	block.Hash = hash
 	block.Nonce = nonce
 	return &block
