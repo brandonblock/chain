@@ -1,9 +1,8 @@
 package chain
 
 import (
-	"fmt"
-
 	"github.com/boltdb/bolt"
+	"github.com/labstack/gommon/log"
 )
 
 const blocksBucket = "blocks"
@@ -32,7 +31,7 @@ func NewBlockchain() (*Blockchain, error) {
 
 		// if it doesn't exist, create and seed with genesis block
 		if b == nil {
-			fmt.Println("No existing blockchain found. Creating a genesis block...")
+			log.Info("No existing blockchain found, reating a genesis block")
 			// create initial block
 			genesis := NewGenesisBlock()
 
@@ -57,6 +56,7 @@ func NewBlockchain() (*Blockchain, error) {
 			}
 			tip = genesis.Hash
 		} else {
+			log.Info("using existing blockchain")
 
 			//get tip
 			tip = b.Get([]byte("l"))
