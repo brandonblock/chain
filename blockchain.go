@@ -1,7 +1,7 @@
 package chain
 
 import (
-	"os"
+	"fmt"
 
 	"github.com/boltdb/bolt"
 )
@@ -17,7 +17,7 @@ type Blockchain struct {
 
 // NewBlockchain returns a new Blockchain with initial genesis block
 func NewBlockchain() (*Blockchain, error) {
-	dbFile := os.Getenv(dbFile)
+
 	// open db file
 	db, err := bolt.Open(dbFile, 0600, nil)
 	if err != nil {
@@ -27,18 +27,28 @@ func NewBlockchain() (*Blockchain, error) {
 
 	// create read-write boltdb transaction
 	err = db.Update(func(tx *bolt.Tx) error {
+		// grab block storage bucket
 		b := tx.Bucket([]byte(blocksBucket))
 
+		// if it doesn't exist, create and seed with genesis block
 		if b == nil {
+			fmt.Println("No existing blockchain found. Creating a genesis block...")
+			// create initial block
 			genesis := NewGenesisBlock()
+
+			// grab block storage bucket
 			b, err := tx.CreateBucket([]byte(blocksBucket))
 			if err != nil {
 				return err
 			}
+
+			// serialize genesis block
 			serialized, err := genesis.Serialize()
 			if err != nil {
 				return err
 			}
+
+			// store block and tip
 			if err = b.Put(genesis.Hash, serialized); err != nil {
 				return err
 			}
@@ -47,6 +57,8 @@ func NewBlockchain() (*Blockchain, error) {
 			}
 			tip = genesis.Hash
 		} else {
+
+			//get tip
 			tip = b.Get([]byte("l"))
 		}
 
@@ -60,6 +72,7 @@ func NewBlockchain() (*Blockchain, error) {
 func (bc *Blockchain) AddBlock(data string) (err error) {
 	var lastHash []byte
 
+	// read-only db transaction to get tip
 	if err = bc.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(blocksBucket))
 		lastHash = b.Get([]byte("l"))
@@ -69,8 +82,8 @@ func (bc *Blockchain) AddBlock(data string) (err error) {
 		return
 	}
 
+	// mine and persist new block
 	newBlock := NewBlock(data, lastHash)
-
 	err = bc.db.Update(func(tx *bolt.Tx) (err error) {
 		b := tx.Bucket([]byte(blocksBucket))
 		serialized, err := newBlock.Serialize()
