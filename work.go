@@ -29,6 +29,8 @@ func NewProofOfWork(b *Block) *ProofOfWork {
 	return &ProofOfWork{b, target}
 }
 
+// Prove does pointless work to find the hash of a block
+// TODO: PoS instead of this environment-killing crap
 func (p *ProofOfWork) Prove() (int, []byte) {
 	var hashInt big.Int
 	var hash [32]byte
