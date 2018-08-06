@@ -25,7 +25,6 @@ func TestNewBlockchain(t *testing.T) {
 		})
 	}
 	os.Remove(dbFile)
-
 }
 
 func TestBlockchain_AddBlock(t *testing.T) {
