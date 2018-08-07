@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
+	"fmt"
 	"math"
 	"math/big"
 
@@ -36,7 +37,7 @@ func (p *ProofOfWork) Prove() (int, []byte) {
 	var hash [32]byte
 	nonce := 0
 
-	log.Infof("Mining block containing %v", p.block.Hash)
+	fmt.Println("mining...")
 	// don't overflow the counter
 	for nonce < math.MaxInt64 {
 		// prepare
