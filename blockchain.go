@@ -44,7 +44,7 @@ func NewBlockchain(address string) (*Blockchain, error) {
 }
 
 // CreateBlockchain creates a new blockchain DB
-func CreateBlockchain(address string) *Blockchain {
+func CreateBlockchain(address string) (*Blockchain, error) {
 	if dbExists() {
 		fmt.Println("Blockchain already exists.")
 		os.Exit(1)
@@ -53,7 +53,7 @@ func CreateBlockchain(address string) *Blockchain {
 	var tip []byte
 	db, err := bolt.Open(dbFile, 0600, nil)
 	if err != nil {
-		log.Panic(err)
+		return nil, err
 	}
 
 	err = db.Update(func(tx *bolt.Tx) error {
@@ -62,22 +62,20 @@ func CreateBlockchain(address string) *Blockchain {
 
 		b, err := tx.CreateBucket([]byte(blocksBucket))
 		if err != nil {
-			log.Panic(err)
+			return err
 		}
 
 		serialized, err := genesis.Serialize()
 		if err != nil {
-			log.Panic(err)
+			return err
 		}
 
-		err = b.Put(genesis.Hash, serialized)
-		if err != nil {
-			log.Panic(err)
+		if err = b.Put(genesis.Hash, serialized); err != nil {
+			return err
 		}
 
-		err = b.Put([]byte("l"), genesis.Hash)
-		if err != nil {
-			log.Panic(err)
+		if err = b.Put([]byte("l"), genesis.Hash); err != nil {
+			return err
 		}
 		tip = genesis.Hash
 
@@ -85,12 +83,12 @@ func CreateBlockchain(address string) *Blockchain {
 	})
 
 	if err != nil {
-		log.Panic(err)
+		return nil, err
 	}
 
 	bc := Blockchain{tip, db}
 
-	return &bc
+	return &bc, nil
 }
 
 // AddBlock adds a block to the record

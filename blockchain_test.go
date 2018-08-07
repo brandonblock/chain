@@ -19,7 +19,7 @@ func TestNewBlockchain(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewBlockchain()
+			got, err := NewBlockchain("input")
 			assert.NoError(t, err, "no error")
 			assert.IsType(t, &Blockchain{}, got, "if there's no error, this should be of type *Blockchain")
 		})
@@ -28,19 +28,21 @@ func TestNewBlockchain(t *testing.T) {
 }
 
 func TestBlockchain_AddBlock(t *testing.T) {
-	bc, _ := NewBlockchain()
+	targetBits = 8
+	os.Remove(dbFile)
+	bc, _ := CreateBlockchain("address")
 
-	err := bc.AddBlock("send 1 coin to someone")
+	err := bc.AddBlock([]*Transaction{&Transaction{}})
 	assert.NoError(t, err, "this should persist a transaction")
-	err = bc.AddBlock("send 1 coin to someone else")
+	err = bc.AddBlock([]*Transaction{&Transaction{}})
 	assert.NoError(t, err, "this should persist another transaction")
 	os.Remove(dbFile)
 }
 
 func BenchmarkBlockchain_AddBlock(b *testing.B) {
-	bc, _ := NewBlockchain()
+	bc, _ := CreateBlockchain("address")
 	for n := 0; n < b.N; n++ {
-		bc.AddBlock("send 1 coin to someone")
+		bc.AddBlock([]*Transaction{})
 	}
 	os.Remove(dbFile)
 }
