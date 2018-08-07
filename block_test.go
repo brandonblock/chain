@@ -31,7 +31,6 @@ func TestBlock_Serialize(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			b := &Block{
 				Timestamp:     tt.fields.Timestamp,
-				Data:          tt.fields.Data,
 				PrevBlockHash: tt.fields.PrevBlockHash,
 				Hash:          tt.fields.Hash,
 				Nonce:         tt.fields.Nonce,
@@ -47,7 +46,6 @@ func TestDeserializeBlock(t *testing.T) {
 
 	b := &Block{
 		Timestamp: time.Now().Unix(),
-		Data:      []byte{},
 	}
 
 	encoded, _ := b.Serialize()
