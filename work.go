@@ -12,7 +12,7 @@ import (
 )
 
 // hashing difficulty TODO: move to env or something for configuration
-const targetBits = 24
+var targetBits = 24
 
 // ProofOfWork store holds values used for demonstrating work
 type ProofOfWork struct {
