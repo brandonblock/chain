@@ -3,53 +3,51 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 )
 
-// CLI contains the blockchain for reference via command line
-type CLI struct {
-	bc *Blockchain
-}
+// CLI responsible for processing command line arguments
+type CLI struct{}
 
-const (
-	addblock   = "addblock"
-	printchain = "printchain"
-)
-
-// Run starts the CLI listener
+// Run parses command line arguments and processes commands
 func (cli *CLI) Run() {
 	cli.validateArgs()
 
-	// create commands and subcommands
-	addBlockCmd := cli.newCmd(addblock)
-	addBlockData := addBlockCmd.String("data", "", "Block Data")
+	getBalanceCmd := flag.NewFlagSet("getbalance", flag.ExitOnError)
+	createBlockchainCmd := flag.NewFlagSet("createblockchain", flag.ExitOnError)
+	printChainCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
 
-	printChainCmd := cli.newCmd(printchain)
+	createBlockchainAddress := createBlockchainCmd.String("address", "", "The address to send genesis block reward to")
 
-	// handle commands
 	switch os.Args[1] {
-	case addblock:
-		if err := addBlockCmd.Parse(os.Args[2:]); err != nil {
-			cli.printUsage(os.Args[1])
-			os.Exit(1)
+	case "getbalance":
+		err := getBalanceCmd.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
 		}
-	case printchain:
-		if err := printChainCmd.Parse(os.Args[2:]); err != nil {
-			cli.printUsage(os.Args[1])
-			os.Exit(1)
+	case "createblockchain":
+		err := createBlockchainCmd.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "printchain":
+		err := printChainCmd.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
 		}
 	default:
-		cli.printUsage(os.Args[1])
+		cli.printUsage()
 		os.Exit(1)
 	}
 
-	if addBlockCmd.Parsed() {
-		if *addBlockData == "" {
-			addBlockCmd.Usage()
+	if createBlockchainCmd.Parsed() {
+		if *createBlockchainAddress == "" {
+			createBlockchainCmd.Usage()
 			os.Exit(1)
 		}
-		cli.addBlock(*addBlockData)
+		cli.createBlockchain(*createBlockchainAddress)
 	}
 
 	if printChainCmd.Parsed() {
@@ -57,49 +55,56 @@ func (cli *CLI) Run() {
 	}
 }
 
-func (cli *CLI) printChain() {
-	bci := cli.bc.Iterator()
-
-	for {
-		block, err := bci.Next()
-		if err != nil {
-			return
-		}
-
-		fmt.Printf("Previous Has: %x\n", block.PrevBlockHash)
-		fmt.Printf("Data: %s\n", block.Data)
-		fmt.Printf("Hash: %x\n", block.Hash)
-
-		p := NewProofOfWork(block)
-		fmt.Printf("PoW: %s\n", strconv.FormatBool(p.Validate()))
-		fmt.Println()
-		if len(block.PrevBlockHash) == 0 {
-			break
-		}
-	}
+func (cli *CLI) createBlockchain(address string) error {
+	bc := CreateBlockchain(address)
+	// if err != nil {
+	// 	return err
+	// }
+	bc.db.Close()
+	fmt.Println("Done!")
+	return nil
 }
 
-func (cli *CLI) addBlock(data string) {
-	cli.bc.AddBlock(data)
-	fmt.Println("block added")
-}
-
-func (cli *CLI) newCmd(cmd string) *flag.FlagSet {
-	return flag.NewFlagSet(cmd, flag.ExitOnError)
-}
-
-func (cli *CLI) printUsage(input string) {
-	if input != "" {
-		fmt.Println(fmt.Sprintf("\"%s\" not understood", input))
-	}
+func (cli *CLI) printUsage() {
 	fmt.Println("Usage:")
-	fmt.Println("  addblock -data BLOCK_DATA - add a block to the blockchain")
-	fmt.Println("  printchain - print all the blocks of the blockchain")
+	fmt.Println("  getbalance -address ADDRESS - Get balance of ADDRESS")
+	fmt.Println("  createblockchain -address ADDRESS - Create a blockchain and send genesis block reward to ADDRESS")
+	fmt.Println("  printchain - Print all the blocks of the blockchain")
 }
 
 func (cli *CLI) validateArgs() {
 	if len(os.Args) < 2 {
-		cli.printUsage("")
+		cli.printUsage()
 		os.Exit(1)
 	}
+}
+
+func (cli *CLI) printChain() error {
+
+	//TODO: This is busted as hell
+	bc := CreateBlockchain("")
+	// if err != nil {
+	// 	return nil
+	// }
+	defer bc.db.Close()
+
+	bci := bc.Iterator()
+
+	for {
+		block, err := bci.Next()
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("Prev. hash: %x\n", block.PrevBlockHash)
+		fmt.Printf("Hash: %x\n", block.Hash)
+		pow := NewProofOfWork(block)
+		fmt.Printf("PoW: %s\n", strconv.FormatBool(pow.Validate()))
+		fmt.Println()
+
+		if len(block.PrevBlockHash) == 0 {
+			return nil
+		}
+	}
+	return nil
 }
