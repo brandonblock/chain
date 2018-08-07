@@ -56,10 +56,10 @@ func (cli *CLI) Run() {
 }
 
 func (cli *CLI) createBlockchain(address string) error {
-	bc := CreateBlockchain(address)
-	// if err != nil {
-	// 	return err
-	// }
+	bc, err := CreateBlockchain(address)
+	if err != nil {
+		return err
+	}
 	bc.db.Close()
 	fmt.Println("Done!")
 	return nil
@@ -82,10 +82,10 @@ func (cli *CLI) validateArgs() {
 func (cli *CLI) printChain() error {
 
 	//TODO: This is busted as hell
-	bc := CreateBlockchain("")
-	// if err != nil {
-	// 	return nil
-	// }
+	bc, err := CreateBlockchain("")
+	if err != nil {
+		return nil
+	}
 	defer bc.db.Close()
 
 	bci := bc.Iterator()
@@ -106,5 +106,4 @@ func (cli *CLI) printChain() error {
 			return nil
 		}
 	}
-	return nil
 }
