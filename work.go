@@ -36,7 +36,7 @@ func (p *ProofOfWork) Prove() (int, []byte) {
 	var hash [32]byte
 	nonce := 0
 
-	log.Infof("Mining block containing %v", p.block.Data)
+	log.Infof("Mining block containing %v", p.block.Hash)
 	// don't overflow the counter
 	for nonce < math.MaxInt64 {
 		// prepare
@@ -73,7 +73,7 @@ func (p *ProofOfWork) prepareData(nonce int) []byte {
 	return bytes.Join(
 		[][]byte{
 			p.block.PrevBlockHash,
-			p.block.Data,
+			p.block.HashTransactions(),
 			intToHex(p.block.Timestamp),
 			intToHex(int64(targetBits)),
 			intToHex(int64(nonce)),
