@@ -17,6 +17,7 @@ const (
 	printchain = "printchain"
 )
 
+// Run starts the CLI listener
 func (cli *CLI) Run() {
 	cli.validateArgs()
 
@@ -89,7 +90,7 @@ func (cli *CLI) newCmd(cmd string) *flag.FlagSet {
 
 func (cli *CLI) printUsage(input string) {
 	if input != "" {
-		fmt.Println(fmt.Sprintf("\"%s\" not understood"))
+		fmt.Println(fmt.Sprintf("\"%s\" not understood", input))
 	}
 	fmt.Println("Usage:")
 	fmt.Println("  addblock -data BLOCK_DATA - add a block to the blockchain")
