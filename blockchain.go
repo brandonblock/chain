@@ -184,6 +184,25 @@ func (bc *Blockchain) FindUnspentTransactions(address string) ([]Transaction, er
 	}
 }
 
+// FindUTXO returns unspent transactions for a given address
+func (bc *Blockchain) FindUTXO(address string) ([]TXOutput, error) {
+	var UTXOs []TXOutput
+	unspentTransactions, err := bc.FindUnspentTransactions(address)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, tx := range unspentTransactions {
+		for _, out := range tx.Vout {
+			if out.CanBeUnlockedWith(address) {
+				UTXOs = append(UTXOs, out)
+			}
+		}
+	}
+
+	return UTXOs, nil
+}
+
 func dbExists() bool {
 	if _, err := os.Stat(dbFile); os.IsNotExist(err) {
 		return false

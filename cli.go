@@ -19,6 +19,7 @@ func (cli *CLI) Run() {
 	createBlockchainCmd := flag.NewFlagSet("createblockchain", flag.ExitOnError)
 	printChainCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
 
+	getBalanceAddress := getBalanceCmd.String("address", "", "The address to get balance for")
 	createBlockchainAddress := createBlockchainCmd.String("address", "", "The address to send genesis block reward to")
 
 	switch os.Args[1] {
@@ -40,6 +41,14 @@ func (cli *CLI) Run() {
 	default:
 		cli.printUsage()
 		os.Exit(1)
+	}
+
+	if getBalanceCmd.Parsed() {
+		if *getBalanceAddress == "" {
+			getBalanceCmd.Usage()
+			os.Exit(1)
+		}
+		cli.getBalance(*getBalanceAddress)
 	}
 
 	if createBlockchainCmd.Parsed() {
@@ -106,4 +115,25 @@ func (cli *CLI) printChain() error {
 			return nil
 		}
 	}
+}
+
+func (cli *CLI) getBalance(address string) error {
+	bc, err := NewBlockchain(address)
+	if err != nil {
+		return err
+	}
+	defer bc.db.Close()
+
+	balance := 0
+	UTXOs, err := bc.FindUTXO(address)
+	if err != nil {
+		return err
+	}
+	for _, out := range UTXOs {
+		balance += out.Value
+	}
+
+	fmt.Printf("Balance of '%s': %d\n", address, balance)
+
+	return nil
 }
