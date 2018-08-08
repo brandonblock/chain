@@ -22,12 +22,22 @@ type TXInput struct {
 	ScriptSig string
 }
 
+// CanUnlockOutputWith checks if the input can be "unlocked" with the given address TODO: Implement keys
+func (in *TXInput) CanUnlockOutputWith(unlockingData string) bool {
+	return in.ScriptSig == unlockingData
+}
+
 // TXOutput is the second part of a transaction
 type TXOutput struct {
 	// Value stores the "coin"
 	Value int
 	// ScriptPubKey stores addresses, currently
 	ScriptPubKey string
+}
+
+// CanBeUnlockedWith checks if the input can be "unlocked" with the given address TODO: Implement keys
+func (out *TXOutput) CanBeUnlockedWith(unlockingData string) bool {
+	return out.ScriptPubKey == unlockingData
 }
 
 // NewCoinbaseTX is the initial block transaction, needing no earlier transactions
