@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"fmt"
 	"os"
 
@@ -139,4 +140,54 @@ func dbExists() bool {
 	}
 
 	return true
+}
+
+// FindUnspentTransactions finds outputs that have no input references
+func (bc *Blockchain) FindUnspentTransactions(address string) ([]Transaction, error) {
+	var unspentTXs []Transaction
+	spentTXOs := make(map[string][]int)
+	bci := bc.Iterator()
+
+	for {
+		block, err := bci.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, tx := range block.Transactions {
+			txID := hex.EncodeToString(tx.ID)
+
+			// Check every output on the chain
+		Outputs:
+			for outIdx, out := range tx.Vout {
+
+				// if the output is already "claimed" by an input, we ignore
+				if spentTXOs[txID] != nil {
+					for _, spentOut := range spentTXOs[txID] {
+						if spentOut == outIdx {
+							continue Outputs
+						}
+					}
+				}
+
+				// We want outputs that can unlock with our given address
+				if out.CanBeUnlockedWith(address) {
+					unspentTXs = append(unspentTXs, *tx)
+				}
+			}
+
+			// coinbase transactions don't unlock inputs so we can ignore
+			if !tx.IsCoinbase() {
+				for _, in := range tx.Vin {
+					if in.CanUnlockOutputWith(address) {
+						inTxID := hex.EncodeToString(in.Txid)
+						spentTXOs[inTxID] = append(spentTXOs[inTxID], in.Vout)
+					}
+				}
+			}
+		}
+		if len(block.PrevBlockHash) == 0 {
+			return unspentTXs, nil
+		}
+	}
 }

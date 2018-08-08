@@ -12,6 +12,11 @@ type Transaction struct {
 //TODO: Change reward dynamically
 const subsidy int = 210000
 
+//IsCoinbase returns whether or not this is the coinbase transaction
+func (t *Transaction) IsCoinbase() bool {
+	return len(t.Vin) == 1 && len(t.Vin[0].Txid) == 0 && t.Vin[0].Vout == -1
+}
+
 // TXInput is the first part of a transaction
 type TXInput struct {
 	//Txid is the transaction ID
