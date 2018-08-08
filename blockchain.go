@@ -134,14 +134,6 @@ func (bc *Blockchain) Iterator() *BlockchainIterator {
 	return &BlockchainIterator{bc.tip, bc.db}
 }
 
-func dbExists() bool {
-	if _, err := os.Stat(dbFile); os.IsNotExist(err) {
-		return false
-	}
-
-	return true
-}
-
 // FindUnspentTransactions finds outputs that have no input references
 func (bc *Blockchain) FindUnspentTransactions(address string) ([]Transaction, error) {
 	var unspentTXs []Transaction
@@ -190,4 +182,12 @@ func (bc *Blockchain) FindUnspentTransactions(address string) ([]Transaction, er
 			return unspentTXs, nil
 		}
 	}
+}
+
+func dbExists() bool {
+	if _, err := os.Stat(dbFile); os.IsNotExist(err) {
+		return false
+	}
+
+	return true
 }
