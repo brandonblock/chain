@@ -126,7 +126,7 @@ func (bc *Blockchain) AddBlock(transactions []*Transaction) (err error) {
 		return
 	})
 
-	return
+	return err
 }
 
 // Iterator returns a BlockchainIterator with the Blockchain values
