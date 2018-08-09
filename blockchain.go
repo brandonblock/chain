@@ -203,6 +203,33 @@ func (bc *Blockchain) FindUTXO(address string) ([]TXOutput, error) {
 	return UTXOs, nil
 }
 
+// FindSpendableOutputs iterates over unspent transactions and grabs their values to spend
+func (bc *Blockchain) FindSpendableOutputs(address string, amount int) (int, map[string][]int, error) {
+	unspentOutputs := make(map[string][]int)
+	unspentTXs, err := bc.FindUnspentTransactions(address)
+	if err != nil {
+		return 0, nil, err
+	}
+	accumulated := 0
+
+	for _, tx := range unspentTXs {
+		txID := hex.EncodeToString(tx.ID)
+
+		// Accumulate unspent outputs until they equal the spend amount, then return the spend amount and the remainder
+		for outIdx, out := range tx.Vout {
+			if out.CanBeUnlockedWith(address) && accumulated < amount {
+				accumulated += out.Value
+				unspentOutputs[txID] = append(unspentOutputs[txID], outIdx)
+
+				if accumulated >= amount {
+					return accumulated, unspentOutputs, nil
+				}
+			}
+		}
+	}
+	return accumulated, unspentOutputs, nil
+}
+
 func dbExists() bool {
 	if _, err := os.Stat(dbFile); os.IsNotExist(err) {
 		return false
