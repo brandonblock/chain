@@ -3,9 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
+
+	"github.com/labstack/gommon/log"
 )
 
 // CLI responsible for processing command line arguments
@@ -18,9 +19,13 @@ func (cli *CLI) Run() {
 	getBalanceCmd := flag.NewFlagSet("getbalance", flag.ExitOnError)
 	createBlockchainCmd := flag.NewFlagSet("createblockchain", flag.ExitOnError)
 	printChainCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
+	sendCmd := flag.NewFlagSet("send", flag.ExitOnError)
 
 	getBalanceAddress := getBalanceCmd.String("address", "", "The address to get balance for")
 	createBlockchainAddress := createBlockchainCmd.String("address", "", "The address to send genesis block reward to")
+	sendFrom := sendCmd.String("from", "", "Source wallet address")
+	sendTo := sendCmd.String("to", "", "Destination wallet address")
+	sendAmount := sendCmd.Int("amount", 0, "Amount to send")
 
 	switch os.Args[1] {
 	case "getbalance":
@@ -35,6 +40,11 @@ func (cli *CLI) Run() {
 		}
 	case "printchain":
 		err := printChainCmd.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "send":
+		err := sendCmd.Parse(os.Args[2:])
 		if err != nil {
 			log.Panic(err)
 		}
@@ -62,6 +72,17 @@ func (cli *CLI) Run() {
 	if printChainCmd.Parsed() {
 		cli.printChain()
 	}
+	if sendCmd.Parsed() {
+		if *sendFrom == "" || *sendTo == "" || *sendAmount <= 0 {
+			sendCmd.Usage()
+			os.Exit(1)
+		}
+
+		if err := cli.send(*sendFrom, *sendTo, *sendAmount); err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
+	}
 }
 
 func (cli *CLI) createBlockchain(address string) error {
@@ -79,6 +100,7 @@ func (cli *CLI) printUsage() {
 	fmt.Println("  getbalance -address ADDRESS - Get balance of ADDRESS")
 	fmt.Println("  createblockchain -address ADDRESS - Create a blockchain and send genesis block reward to ADDRESS")
 	fmt.Println("  printchain - Print all the blocks of the blockchain")
+	fmt.Println("  send -from FROM -to TO -amount AMOUNT - Send AMOUNT of coins from FROM address to TO")
 }
 
 func (cli *CLI) validateArgs() {
@@ -135,5 +157,24 @@ func (cli *CLI) getBalance(address string) error {
 
 	fmt.Printf("Balance of '%s': %d\n", address, balance)
 
+	return nil
+}
+
+func (cli *CLI) send(from, to string, amount int) error {
+	bc, err := NewBlockchain(from)
+	if err != nil {
+		return err
+	}
+	defer bc.db.Close()
+
+	tx, err := NewUTXOTransaction(from, to, amount, bc)
+	if err != nil {
+		return err
+	}
+
+	if err := bc.AddBlock([]*Transaction{tx}); err != nil {
+		return err
+	}
+	fmt.Println("successfully sent")
 	return nil
 }
