@@ -6,6 +6,8 @@ import (
 	"encoding/gob"
 	"encoding/hex"
 	"fmt"
+
+	"github.com/labstack/gommon/log"
 )
 
 // Transaction is a combination of inputs and outputs
@@ -117,12 +119,15 @@ func NewUTXOTransaction(from, to string, amount int, bc *Blockchain) (*Transacti
 			input := TXInput{txID, out, from}
 			inputs = append(inputs, input)
 		}
+	}
 
-		//List outputs
-		outputs = append(outputs, TXOutput{acc - amount, from})
+	outputs = append(outputs, TXOutput{amount, to})
+	if acc > amount {
+		outputs = append(outputs, TXOutput{acc - amount, from}) // a change
 	}
 
 	tx := Transaction{nil, inputs, outputs}
+	log.Info("NewUTXOTransaction: %s", tx)
 
 	return &tx, tx.SetID()
 }
